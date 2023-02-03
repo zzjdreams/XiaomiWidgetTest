@@ -14,4 +14,13 @@ public class ExampleUnitTest {
     public void addition_isCorrect() {
         assertEquals(4, 2 + 2);
     }
+
+    public boolean checkStraightLine(int[][] coordinates) {
+        for(int i = 2; i < coordinates.length; i++){
+            if ((coordinates[i][1]-coordinates[0][1])*(coordinates[i-1][0]-coordinates[0][0]) != (coordinates[i][0]-coordinates[0][0])*(coordinates[i-1][1]-coordinates[0][1])){
+                return false;
+            }
+        }
+        return true;
+    }
 }
