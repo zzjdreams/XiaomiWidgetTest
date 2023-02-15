@@ -1,6 +1,7 @@
 package com.zzj.xiaomiwidgettest;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.annotation.SuppressLint;
 import android.app.admin.DeviceAdminReceiver;
@@ -10,9 +11,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -21,7 +25,9 @@ import android.widget.Toast;
 
 import com.zzj.xiaomiwidgettest.databinding.ActivityMainBinding;
 import com.zzj.xiaomiwidgettest.receiver.MyAppWidget;
+import com.zzj.xiaomiwidgettest.service.ViewModelWidget;
 import com.zzj.xiaomiwidgettest.utils.OverLayerUtil;
+import com.zzj.xiaomiwidgettest.view.EyesView;
 import com.zzj.xiaomiwidgettest.view.ItemViewTouchListener;
 import com.zzj.xiaomiwidgettest.view.ScreenAnimView;
 import com.zzj.xiaomiwidgettest.view.TestView;
@@ -38,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private PowerManager powerManager = null;
     private PowerManager.WakeLock wakeLock;
     private static final String TAG = "MainActivity";
-
+    private boolean aBoolean = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,25 @@ public class MainActivity extends AppCompatActivity {
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         registerReceiver();
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent, 1);
+            } else {
+                //TODO do something you need
+            }
+        }
+
+
+        ViewModelWidget.widgetData.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                Log.i(TAG, "onChanged: 状态发生改变:" + aBoolean);
+                MainActivity.this.aBoolean = aBoolean;
+            }
+        });
 
         btn_send = findViewById(R.id.btn_test_send);
         btn_send.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
         mainBinding.btnTestCreateFloatSys.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+//                showFloat();
+                showEyes();
             }
         });
 
@@ -76,6 +102,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "onClick: 点击了重置按钮");
+//                if (Build.VERSION.SDK_INT >= 23) {
+//                    if (!Settings.canDrawOverlays(MainActivity.this)) {
+//                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        startActivityForResult(intent, 1);
+//                    } else {
+//                        //TODO do something you need
+//                    }
+//                }
+                if (windowManager != null && eyesView != null) {
+                    windowManager.removeView(eyesView);
+                }
             }
         });
 
@@ -89,6 +127,31 @@ public class MainActivity extends AppCompatActivity {
 //
 //        startActivityForResult(intent2, 0);
 
+    }
+
+    private EyesView eyesView;
+    private WindowManager windowManager;
+    @SuppressLint("ClickableViewAccessibility")
+    private void showEyes() {
+        if (eyesView == null) {
+            eyesView = new EyesView(this);
+        }
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(outMetrics);
+        WindowManager.LayoutParams layoutParam = new  WindowManager.LayoutParams();
+        layoutParam.width = 1080;
+        layoutParam.height = 350;
+        // 设置背景为透明
+        layoutParam.format = PixelFormat.RGBA_8888;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+        layoutParam.flags =  WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        eyesView.setOnTouchListener(new ItemViewTouchListener(layoutParam, windowManager));
+        windowManager.addView(eyesView, layoutParam);
     }
 
     public class ScreenOnAndOffReceiver extends DeviceAdminReceiver {
@@ -188,6 +251,35 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+    }
+
+    private void showFloat() {
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        WindowManager.LayoutParams layoutParam = new  WindowManager.LayoutParams();
+        layoutParam.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        layoutParam.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        // 设置背景为透明
+        layoutParam.format = PixelFormat.RGBA_8888;
+        layoutParam.alpha = 0.5f;
+        floatRootView = new ScreenAnimView(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+        windowManager.addView(floatRootView, layoutParam);
+        floatRootView.setCallback(new OverLayerUtil.Callback() {
+            @Override
+            public void invoke() {
+                new Handler(getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        windowManager.removeView(floatRootView);
+                        floatRootView = null;
+                    }
+                }, 500);
+            }
+        });
     }
 
     @Override

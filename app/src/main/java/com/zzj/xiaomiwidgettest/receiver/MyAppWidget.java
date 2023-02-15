@@ -6,13 +6,26 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
+
+import androidx.annotation.RequiresApi;
 
 import com.zzj.xiaomiwidgettest.MainActivity;
 import com.zzj.xiaomiwidgettest.R;
+import com.zzj.xiaomiwidgettest.service.AppWidgetService;
+import com.zzj.xiaomiwidgettest.service.ViewModelWidget;
+import com.zzj.xiaomiwidgettest.utils.OverLayerUtil;
+import com.zzj.xiaomiwidgettest.view.ScreenAnimView;
+
+import static android.content.Context.WINDOW_SERVICE;
 
 /**
  * Description:
@@ -34,6 +47,9 @@ public class MyAppWidget extends AppWidgetProvider {
                     // 这个layout就是我们之前定义的initiallayout
             );
         }
+        if (!OverLayerUtil.isServiceRunning(context, AppWidgetService.class.getCanonicalName())){
+            context.startService(new Intent(context, AppWidgetService.class));
+        }
         views.setOnClickPendingIntent(R.id.rl_layout, getPendingIntent(context, R.id.id_iv_switch_status));
         updateWidget(context, appWidgetManager, appWidgetIds,isOff);
 
@@ -47,6 +63,9 @@ public class MyAppWidget extends AppWidgetProvider {
             views = new RemoteViews(context.getPackageName(),R.layout.widget_recorder_remote_view
                     // 这个layout就是我们之前定义的initiallayout
             );
+        }
+        if (!OverLayerUtil.isServiceRunning(context, AppWidgetService.class.getCanonicalName())){
+            context.startService(new Intent(context, AppWidgetService.class));
         }
         System.out.println("isOff: "+isOff);
         if (isOff) {
@@ -62,6 +81,7 @@ public class MyAppWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.id_tv_status, tvTurnOff);
             views.setImageViewResource(R.id.id_iv_switch_status, R.drawable.ic_turn_off);
         }
+        ViewModelWidget.widgetData.setValue(isOff);
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetIds, views);
     }
@@ -100,6 +120,9 @@ public class MyAppWidget extends AppWidgetProvider {
     public void onEnabled(Context context) {
         super.onEnabled(context);
         Log.d(TAG, "onEnabled: ");
+        if (!OverLayerUtil.isServiceRunning(context, AppWidgetService.class.getCanonicalName())){
+            context.startService(new Intent(context, AppWidgetService.class));
+        }
     }
 
     @Override
@@ -118,6 +141,7 @@ public class MyAppWidget extends AppWidgetProvider {
     public void onDisabled(Context context) {
         super.onDisabled(context);
         Log.d(TAG, "onDisabled: ");
+        context.stopService(new Intent(context, AppWidgetService.class));
     }
 
 
@@ -126,5 +150,39 @@ public class MyAppWidget extends AppWidgetProvider {
     public void onRestored(Context context, int[] oldWidgetIds, int[] newWidgetIds) {
         super.onRestored(context, oldWidgetIds, newWidgetIds);
         Log.d(TAG, "onRestored: ");
+    }
+
+    private ScreenAnimView floatRootView;
+    private boolean isWorking = false;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
+    private Runnable mRunnable;
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void showFloat(Context context, OverLayerUtil.Callback callback) {
+        if (floatRootView == null) {
+            floatRootView = new ScreenAnimView(context);
+        }
+        WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
+        WindowManager.LayoutParams layoutParam = new  WindowManager.LayoutParams();
+        layoutParam.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        layoutParam.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        // 设置背景为透明
+        layoutParam.format = PixelFormat.RGBA_8888;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }else {
+            layoutParam.type = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+//        layoutParam.type |=  WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        windowManager.addView(floatRootView, layoutParam);
+        isWorking = true;
+        mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                windowManager.removeView(floatRootView);
+                floatRootView = null;
+                isWorking  =false;
+            }
+        };
+        floatRootView.setCallback(callback);
     }
 }

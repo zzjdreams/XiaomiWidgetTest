@@ -49,8 +49,12 @@ import java.lang.reflect.InvocationTargetException;
 public class ScreenAnimView extends View {
     private static final String TAG = "ScreenAnimView";
     private static final int DROP_CODE = 0x101;
+
     private int screenWidth;
     private int screenHeight;
+    private int step1;
+    private int step2;
+    private int divideHigh;
     private Paint mPaint;
     private Bitmap bitmap;
     private Handler handler;
@@ -79,7 +83,7 @@ public class ScreenAnimView extends View {
 
     private void init(Context context){
         mPaint = new Paint();
-        mPaint.setColor(Color.RED);
+        mPaint.setColor(Color.BLACK);
         mPaint.setStyle(Paint.Style.FILL);
         bitmap = getBitmap(context, R.drawable.ic_unknow);
         devicePolicyManager = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
@@ -111,13 +115,13 @@ public class ScreenAnimView extends View {
                         return;
                     };
 
-                    currentHeight +=50;
+                    currentHeight +=currentHeight<divideHigh?step1:step2;
                     invalidate();
                     Log.i(TAG, "screenWidth: " + screenWidth);
                     Log.i(TAG, "currentHeight: " + currentHeight);
                     Message msg1 = handler.obtainMessage();
                     msg1.what = DROP_CODE;
-                    handler.sendMessageDelayed(msg1, 500);
+                    handler.sendMessageDelayed(msg1, 50);
 //                    isRunning = false;
                     Log.e(TAG, "handleMessage: 更改高度:" + currentHeight);
                 }
@@ -139,7 +143,6 @@ public class ScreenAnimView extends View {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            display = context.getDisplay();
             WindowMetrics windowMetrics = windowManager.getCurrentWindowMetrics();
             screenWidth = windowMetrics.getBounds().width();
             screenHeight = windowMetrics.getBounds().height();
@@ -150,7 +153,13 @@ public class ScreenAnimView extends View {
             //屏幕可用高度(像素个数)
             screenHeight = display.getHeight();
         }
-
+        divideHigh = (screenHeight*2/3);
+        step1 = divideHigh/31;
+        step2 = (screenHeight-divideHigh)/31;
+        step1 = Math.max(step1, 1);
+        step2 = Math.max(step2, 1);
+        Log.i(TAG, "getScreenSize: step1:" + step1);
+        Log.i(TAG, "getScreenSize: step2:" + step2);
     }
 
     private void setDefaultAttr(){
