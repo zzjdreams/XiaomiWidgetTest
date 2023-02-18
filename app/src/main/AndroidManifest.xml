@@ -10,6 +10,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -44,6 +45,7 @@
                 android:resource="@xml/mywidget" />
         </receiver>
         <service android:name=".service.AppWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="true"/>
     </application>
 

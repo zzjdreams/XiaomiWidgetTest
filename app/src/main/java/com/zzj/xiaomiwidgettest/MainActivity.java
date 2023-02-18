@@ -1,8 +1,5 @@
 package com.zzj.xiaomiwidgettest;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-
 import android.annotation.SuppressLint;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
@@ -23,6 +20,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+
 import com.zzj.xiaomiwidgettest.databinding.ActivityMainBinding;
 import com.zzj.xiaomiwidgettest.receiver.MyAppWidget;
 import com.zzj.xiaomiwidgettest.service.ViewModelWidget;
@@ -30,7 +30,6 @@ import com.zzj.xiaomiwidgettest.utils.OverLayerUtil;
 import com.zzj.xiaomiwidgettest.view.EyesView;
 import com.zzj.xiaomiwidgettest.view.ItemViewTouchListener;
 import com.zzj.xiaomiwidgettest.view.ScreenAnimView;
-import com.zzj.xiaomiwidgettest.view.TestView;
 
 public class MainActivity extends AppCompatActivity {
     private MyAppWidget widget;
@@ -95,6 +94,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 //                showFloat();
                 showEyes();
+//                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+//                Class<?> clazz = pm.getClass();
+//                try {
+//                    @SuppressLint("DiscouragedPrivateApi") Method method = clazz.getDeclaredMethod("goToSleep", Long.TYPE);
+//                    method.invoke(pm, 1000);
+//                } catch (NoSuchMethodException e) {
+//                    e.printStackTrace();
+//                } catch (IllegalAccessException e) {
+//                    e.printStackTrace();
+//                } catch (InvocationTargetException e) {
+//                    e.printStackTrace();
+//                }
+
             }
         });
 

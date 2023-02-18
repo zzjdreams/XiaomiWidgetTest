@@ -123,7 +123,7 @@ public class ScreenAnimView extends View {
                     msg1.what = DROP_CODE;
                     handler.sendMessageDelayed(msg1, 50);
 //                    isRunning = false;
-                    Log.e(TAG, "handleMessage: 更改高度:" + currentHeight);
+//                    Log.e(TAG, "handleMessage: 更改高度:" + currentHeight);
                 }
             }
         };
