@@ -13,6 +13,7 @@
         app:layout_constraintRight_toRightOf="parent"/>
 
     <com.zzj.xiaomiwidgettest.view.EyesView
+        android:id="@+id/eyes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"

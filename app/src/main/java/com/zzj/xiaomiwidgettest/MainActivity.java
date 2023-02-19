@@ -139,6 +139,12 @@ public class MainActivity extends AppCompatActivity {
 //
 //        startActivityForResult(intent2, 0);
 
+        mainBinding.eyes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainBinding.eyes.changeSkinColor();
+            }
+        });
     }
 
     private EyesView eyesView;

@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">XiaomiWidgetTest</string>
-    <string name="turn_on">亮屏状态</string>
-    <string name="turn_off">息屏状态</string>
+    <string name="turn_on">显示眼睛</string>
+    <string name="turn_off">关闭眼睛</string>
 </resources>

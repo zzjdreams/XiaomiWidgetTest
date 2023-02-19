@@ -275,6 +275,13 @@ public class EyesView extends View {
         }
     }
 
+    public void changeSkinColor(){
+        int red = (int) (Math.random() * 255);
+        int green = (int) (Math.random() * 255);
+        int blue = (int) (Math.random() * 255);
+        color = Color.argb(255, red, green, blue);
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         if (mhandler != null){

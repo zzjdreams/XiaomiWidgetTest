@@ -120,12 +120,24 @@ public class AppWidgetService extends LifecycleService{
             layoutParam.type = WindowManager.LayoutParams.TYPE_PHONE;
         }
         layoutParam.flags =  WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        ItemViewTouchListener itemViewTouchListener = new ItemViewTouchListener(layoutParam, windowManager);
+        itemViewTouchListener.setClickListener(new ItemViewTouchListener.ClickListener() {
+            @Override
+            public void onClick() {
+                eyesView.changeSkinColor();
+            }
+
+            @Override
+            public void onLongClick() {
+
+            }
+        });
         remoteViewManger2 = RemoteViewManger
                 .builder()
                 .bindView(eyesView)
                 .setLp(layoutParam)
                 .setWindowManager(windowManager)
-                .setListener(new ItemViewTouchListener(layoutParam, windowManager))
+                .setListener(itemViewTouchListener)
                 .create();
     }
 
