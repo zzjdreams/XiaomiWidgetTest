@@ -46,6 +46,7 @@
         </receiver>
         <service android:name=".service.AppWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:foregroundServiceType="mediaProjection"
             android:exported="true"/>
     </application>
 

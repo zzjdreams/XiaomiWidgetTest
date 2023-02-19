@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -78,11 +79,11 @@ public class MyAppWidget extends AppWidgetProvider {
                 serviceIntent = new Intent(context, AppWidgetService.class);
             }
             Log.i(TAG, "startService: 创建线程");
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                context.startForegroundService(new Intent(context, AppWidgetService.class));
-//            }else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(new Intent(context, AppWidgetService.class));
+            }else {
             context.startService(serviceIntent);
-//            }
+            }
 //            context.bindService(new Intent(context, AppWidgetService.class), new AppWidgetService.BindService(), 0);
         } else {
             Log.i(TAG, "startService: 线程已存在");

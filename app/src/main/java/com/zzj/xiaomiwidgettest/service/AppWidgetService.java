@@ -2,6 +2,8 @@ package com.zzj.xiaomiwidgettest.service;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
@@ -151,17 +153,36 @@ public class AppWidgetService extends LifecycleService{
         });
     }
 
-//    @Override
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//        Log.d(TAG, "onStartCommand()");
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//        builder.setContentTitle("My Notification");
-//        builder.setContentText("Hello World!");
-//        builder.setSmallIcon(R.mipmap.ic_launcher);
-//        Notification notification = builder.build();
-//        startForeground(1, notification);
-//        return super.onStartCommand(intent, flags, startId);
-//    }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand()");
+        startForeground();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    String notificationId = "channelId";
+    String notificationName = "channelName";
+    private void startForeground(){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        //创建NotificationChannel
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // 需要添加管道，否则直接闪退
+            NotificationChannel channel = new NotificationChannel(notificationId, notificationName, NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Notification.Builder builder = new Notification.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("悬浮窗服务启动")
+                .setContentText("悬浮窗服务正在运行...");
+        //设置Notification的ChannelID,否则不能正常显示
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder.setChannelId(notificationId);
+        }
+        Notification notification = builder.build();
+        startForeground(1, notification);
+    }
 
     public static class BindService implements ServiceConnection {
 
