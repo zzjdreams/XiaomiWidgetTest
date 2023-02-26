@@ -77,7 +77,7 @@ public class AppWidgetService extends LifecycleService{
 
     private void initData(){
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        initRemoteView1();
+//        initRemoteView1();
         initRemoteView2();
         if (!remoteViewManger2.isAdd()){
             remoteViewManger2.add();
