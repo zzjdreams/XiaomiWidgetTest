@@ -42,33 +42,33 @@ public class NetWorkFaceTest {
         Assert.assertNotNull(getContext());
     }
 
-    @Test
-    public void testConnect(){
-        try {
-            countDownLatch.await();
-            RetrofitClient.getInstance(getContext())
-                    .createBaseApi()
-                    .getMsg(new Subscriber<String>() {
-                        @Override
-                        public void onCompleted() {
-                            countDownLatch.countDown();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            countDownLatch.countDown();
-                        }
-
-                        @Override
-                        public void onNext(String ipResult) {
-                            System.out.println(ipResult);
-                        }
-                    }, "123");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
+//    @Test
+//    public void testConnect(){
+//        try {
+//            countDownLatch.await();
+//            RetrofitClient.getInstance(getContext())
+//                    .createBaseApi()
+//                    .getMsg(new Subscriber<String>() {
+//                        @Override
+//                        public void onCompleted() {
+//                            countDownLatch.countDown();
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//                            countDownLatch.countDown();
+//                        }
+//
+//                        @Override
+//                        public void onNext(String ipResult) {
+//                            System.out.println(ipResult);
+//                        }
+//                    }, "123");
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     @Test
     public void testOkhttp(){

@@ -14,7 +14,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,6 +31,9 @@ import rx.schedulers.Schedulers;
  */
 public class RetrofitClient {
 
+    /**
+     * 连接超时时间
+     */
     private static final int DEFAULT_TIMEOUT = 20;
     private BaseApiService apiService;
     private static OkHttpClient okHttpClient;
@@ -42,8 +44,6 @@ public class RetrofitClient {
     private static Retrofit retrofit;
     private Cache cache = null;
     private File httpCacheDirectory;
-
-
 
     private static Retrofit.Builder builder =
             new Retrofit.Builder()
@@ -57,8 +57,9 @@ public class RetrofitClient {
                     .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
 
 
+    //====================
     private static class SingletonHolder {
-        private static RetrofitClient INSTANCE = new RetrofitClient(
+        private static final RetrofitClient INSTANCE = new RetrofitClient(
                 mContext);
     }
 
@@ -84,13 +85,16 @@ public class RetrofitClient {
         return new RetrofitClient(context, url, headers);
     }
 
-   private RetrofitClient() {
+    //======================================
+
+    private RetrofitClient() {
 
    }
 
     private RetrofitClient(Context context) {
 
         this(context, baseUrl, null);
+
     }
 
     private RetrofitClient(Context context, String url) {
@@ -135,6 +139,7 @@ public class RetrofitClient {
                 .baseUrl(url)
                 .build();
 
+
     }
 
    /**
@@ -175,6 +180,13 @@ public class RetrofitClient {
     public RetrofitClient createBaseApi() {
         apiService = create(BaseApiService.class);
         return this;
+    }
+
+    public BaseApiService getBaseApi() {
+        if (apiService == null){
+            apiService = create(BaseApiService.class);
+        }
+        return apiService;
     }
 
     /**
@@ -231,20 +243,6 @@ public class RetrofitClient {
                 .compose(transformer())
                 .subscribe(new DownSubscriber<ResponseBody>(callBack));
     }
-
-    public Subscription getMsg(Subscriber<String> subscriber, String name){
-        return apiService.obtainMsg(name)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(schedulersTransformer())
-                .compose(transformer())
-                .subscribe(subscriber);
-    }
-
-    // ======================
-//    public Call getData3(Map<String, Object> map){
-//        return apiService.getData3(map);
-//    }
 
 
     //=======================

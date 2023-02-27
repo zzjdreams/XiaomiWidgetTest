@@ -4,6 +4,7 @@ package com.zzj.networkface;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -90,7 +91,21 @@ public interface BaseApiService {
      * @return
      */
     @GET("/host")
-    Observable<String> obtainMsg(@Query("name") String name);
+    Observable<MyRequest<UserBean>> obtainMsg(@Query("name") String name);
+
+    @GET("/host")
+    Observable<MyRequest<UserBean>> obtainMsg(@QueryMap Map<String, Object> map);
+
+    /**
+     * 发送 POST 消息
+     */
+    @Multipart
+    @POST("/host")
+    Observable<MyRequest<UserBean>> postMsg(@Part("name")MultipartBody.Part part);
+
+    @FormUrlEncoded
+    @POST("/host")
+    Observable<MyRequest<UserBean>> postMsg(@FieldMap Map<String, Object> map);
 
 
     //======================  normal retrofit =======================
