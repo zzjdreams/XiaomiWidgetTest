@@ -29,7 +29,7 @@ import rx.schedulers.Schedulers;
  * Created by Tamic on 2016-06-15.
  * {@link # https://github.com/NeglectedByBoss/RetrofitClient}
  */
-public class RetrofitClient {
+public class NetworkFace {
 
     /**
      * 连接超时时间
@@ -38,8 +38,7 @@ public class RetrofitClient {
     private BaseApiService apiService;
     private static OkHttpClient okHttpClient;
     public static String baseUrl = Constants.URL;
-    private static Context mContext;
-    private static RetrofitClient sNewInstance;
+    private static NetworkFace sNewInstance;
 
     private static Retrofit retrofit;
     private Cache cache = null;
@@ -59,74 +58,59 @@ public class RetrofitClient {
 
     //====================
     private static class SingletonHolder {
-        private static final RetrofitClient INSTANCE = new RetrofitClient(
-                mContext);
+        private static final NetworkFace INSTANCE = new NetworkFace();
     }
 
-    public static RetrofitClient getInstance(Context context) {
-        if (context != null) {
-            mContext = context;
-        }
+    public static NetworkFace getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
-    public static RetrofitClient getInstance(Context context, String url) {
-        if (context != null) {
-            mContext = context;
-        }
+    public static NetworkFace getInstance(String url) {
 
-        return new RetrofitClient(context, url);
+        return new NetworkFace(url);
     }
 
-    public static RetrofitClient getInstance(Context context, String url, Map<String, String> headers) {
-        if (context != null) {
-            mContext = context;
-        }
-        return new RetrofitClient(context, url, headers);
+    public static NetworkFace getInstance(String url, Map<String, String> headers) {
+        return new NetworkFace(url, headers);
     }
 
     //======================================
 
-    private RetrofitClient() {
-
+    private NetworkFace() {
+        this(baseUrl, null);
    }
 
-    private RetrofitClient(Context context) {
 
-        this(context, baseUrl, null);
+    private NetworkFace(String url) {
 
+        this(url, null);
     }
 
-    private RetrofitClient(Context context, String url) {
-
-        this(context, url, null);
-    }
-
-    private RetrofitClient(Context context, String url, Map<String, String> headers) {
+    private NetworkFace(String url, Map<String, String> headers) {
 
         if (TextUtils.isEmpty(url)) {
             url = baseUrl;
         }
 
-        if ( httpCacheDirectory == null) {
-            httpCacheDirectory = new File(mContext.getCacheDir(), "tamic_cache");
-        }
-
-        try {
-            if (cache == null) {
-                cache = new Cache(httpCacheDirectory, 10 * 1024 * 1024);
-            }
-        } catch (Exception e) {
-            Log.e("OKHttp", "Could not create http cache", e);
-        }
+//        if ( httpCacheDirectory == null) {
+//            httpCacheDirectory = new File(mContext.getCacheDir(), "tamic_cache");
+//        }
+//
+//        try {
+//            if (cache == null) {
+//                cache = new Cache(httpCacheDirectory, 10 * 1024 * 1024);
+//            }
+//        } catch (Exception e) {
+//            Log.e("OKHttp", "Could not create http cache", e);
+//        }
         okHttpClient = new OkHttpClient.Builder()
                 .addNetworkInterceptor(
                         new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-                .cookieJar(new NovateCookieManger(context))
-                .cache(cache)
+//                .cookieJar(new NovateCookieManger(context))
+//                .cache(cache)
                 .addInterceptor(new BaseInterceptor(headers))
-                .addInterceptor(new CaheInterceptor(context))
-                .addNetworkInterceptor(new CaheInterceptor(context))
+//                .addInterceptor(new CaheInterceptor(context))
+//                .addNetworkInterceptor(new CaheInterceptor(context))
                 .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .connectionPool(new ConnectionPool(8, 15, TimeUnit.SECONDS))
@@ -155,8 +139,8 @@ public class RetrofitClient {
     /**
      *addcookieJar
      */
-    public static void addCookie() {
-        okHttpClient.newBuilder().cookieJar(new NovateCookieManger(mContext)).build();
+    public static void addCookie(Context context) {
+        okHttpClient.newBuilder().cookieJar(new NovateCookieManger(context)).build();
         retrofit = builder.client(okHttpClient).build();
     }
 
@@ -175,7 +159,7 @@ public class RetrofitClient {
      * create BaseApi  defalte ApiManager
      * @return ApiManager
      */
-    public RetrofitClient createBaseApi() {
+    public NetworkFace createBaseApi() {
         apiService = create(BaseApiService.class);
         return this;
     }
@@ -235,11 +219,11 @@ public class RetrofitClient {
                 .subscribe(subscriber);
     }
 
-    public void download(String url, final CallBack callBack) {
+    public void download(Context context, String url, final CallBack callBack) {
         apiService.downloadFile(url)
                 .compose(schedulersTransformer())
                 .compose(transformer())
-                .subscribe(new DownSubscriber<ResponseBody>(callBack));
+                .subscribe(new DownSubscriber<ResponseBody>(context, callBack));
     }
 
 
@@ -329,9 +313,11 @@ public class RetrofitClient {
      */
     class DownSubscriber<ResponseBody> extends Subscriber<ResponseBody> {
         CallBack callBack;
+        Context mContext;
 
-        public DownSubscriber(CallBack callBack) {
+        public DownSubscriber(Context context, CallBack callBack) {
             this.callBack = callBack;
+            this.mContext = context;
         }
 
         @Override
