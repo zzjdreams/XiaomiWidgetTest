@@ -18,6 +18,13 @@ android {
 
     buildTypes {
         release {
+            debuggable false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -27,10 +34,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    android.libraryVariants.all { variant ->
-        // aar 输出文件名配置
+    libraryVariants.all { variant ->
+        // aar 输出文件名配置 输出位置在 build/outputs/aar
         variant.outputs.all { output ->
-            outputFileName = "${rootProject.name}-${android.defaultConfig.versionName}.aar"
+            outputFileName = "${project.name}-${android.defaultConfig.versionName}.aar"
         }
     }
 
